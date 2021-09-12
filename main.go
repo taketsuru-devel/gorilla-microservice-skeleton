@@ -9,8 +9,8 @@ import (
 	"github.com/slack-go/slack/slackevents"
 
 	"github.com/taketsuru-devel/gorilla-microservice-skeleton/serverwrap"
+	"github.com/taketsuru-devel/gorilla-microservice-skeleton/skeletonutil"
 	"github.com/taketsuru-devel/gorilla-microservice-skeleton/slackwrap"
-	"github.com/taketsuru-devel/gorilla-microservice-skeleton/util"
 )
 
 func main() {
@@ -22,14 +22,14 @@ func main() {
 	server.Start()
 	defer server.Stop(60)
 
-	util.WaitSignal()
+	skeletonutil.WaitSignal()
 }
 
 type sampleSubscribeHander struct{}
 
 func (s *sampleSubscribeHander) Handle() slackwrap.EventSubscribeHandlerFunc {
 	return (func(w http.ResponseWriter, r *http.Request, ev *slackevents.EventsAPIEvent) {
-		util.InfoLog(fmt.Sprintf("%v", ev.InnerEvent.Data), 0)
+		skeletonutil.InfoLog(fmt.Sprintf("%v", ev.InnerEvent.Data), 0)
 		mentionEv, ok := ev.InnerEvent.Data.(*slackevents.AppMentionEvent)
 		if !ok {
 			return
@@ -62,7 +62,7 @@ type sampleInteractiveHander struct{}
 
 func (s *sampleInteractiveHander) Handle() slackwrap.InteractiveHandlerFunc {
 	return (func(w http.ResponseWriter, r *http.Request, ic *slack.InteractionCallback) {
-		util.InfoLog(fmt.Sprintf("%v", ic.Message.Text), 0)
+		skeletonutil.InfoLog(fmt.Sprintf("%v", ic.Message.Text), 0)
 	})
 }
 

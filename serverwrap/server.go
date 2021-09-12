@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"github.com/gorilla/mux"
-	"github.com/taketsuru-devel/gorilla-microservice-skeleton/util"
+	"github.com/taketsuru-devel/gorilla-microservice-skeleton/skeletonutil"
 	"net/http"
 	"time"
 )
@@ -34,9 +34,9 @@ func (sw *ServerWrap) AddHandle(path string, handler http.Handler) *mux.Route {
 
 func (sw *ServerWrap) Start() {
 	go func() {
-		util.InfoLog("Server listening", 0)
+		skeletonutil.InfoLog("Server listening", 0)
 		if serverErr := sw.server.ListenAndServe(); !errors.Is(serverErr, http.ErrServerClosed) {
-			util.ErrorLog(serverErr.Error(), 0)
+			skeletonutil.ErrorLog(serverErr.Error(), 0)
 		}
 	}()
 }
@@ -45,8 +45,8 @@ func (sw *ServerWrap) Stop(timeoutSecond int) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSecond)*time.Second)
 	defer cancel()
 	if err := sw.server.Shutdown(ctx); err != nil {
-		util.ErrorLog(err.Error(), 0)
+		skeletonutil.ErrorLog(err.Error(), 0)
 	} else {
-		util.InfoLog("Server Done", 0)
+		skeletonutil.InfoLog("Server Done", 0)
 	}
 }
