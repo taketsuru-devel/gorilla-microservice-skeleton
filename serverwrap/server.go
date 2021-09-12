@@ -3,8 +3,8 @@ package serverwrap
 import (
 	"context"
 	"errors"
-	"github.com/followedwind/gorilla-microservice-skeleton/util"
 	"github.com/gorilla/mux"
+	"github.com/taketsuru-devel/gorilla-microservice-skeleton/util"
 	"net/http"
 	"time"
 )

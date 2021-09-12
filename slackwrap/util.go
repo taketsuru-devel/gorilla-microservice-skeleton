@@ -3,7 +3,7 @@ package slackwrap
 import (
 	"net/http"
 
-	"github.com/followedwind/gorilla-microservice-skeleton/util"
+	"github.com/taketsuru-devel/gorilla-microservice-skeleton/util"
 )
 
 func slackHandlerErrorResponse(w http.ResponseWriter, err error, addStack int) {

@@ -8,9 +8,9 @@ import (
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 
-	"github.com/followedwind/gorilla-microservice-skeleton/serverwrap"
-	"github.com/followedwind/gorilla-microservice-skeleton/slackwrap"
-	"github.com/followedwind/gorilla-microservice-skeleton/util"
+	"github.com/taketsuru-devel/gorilla-microservice-skeleton/serverwrap"
+	"github.com/taketsuru-devel/gorilla-microservice-skeleton/slackwrap"
+	"github.com/taketsuru-devel/gorilla-microservice-skeleton/util"
 )
 
 func main() {

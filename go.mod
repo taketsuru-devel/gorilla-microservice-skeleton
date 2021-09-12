@@ -1,4 +1,4 @@
-module github.com/followedwind/gorilla-microservice-skeleton
+module github.com/taketsuru-devel/gorilla-microservice-skeleton
 
 go 1.15
 
