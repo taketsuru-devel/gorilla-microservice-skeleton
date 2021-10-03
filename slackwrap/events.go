@@ -2,7 +2,6 @@ package slackwrap
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -10,17 +9,18 @@ import (
 	"github.com/slack-go/slack/slackevents"
 )
 
-type EventSubscribeHandlerFunc func(http.ResponseWriter, *http.Request, *slackevents.EventsAPIEvent)
-type EventSubscribeHandler interface {
-	Handle() EventSubscribeHandlerFunc
+type EventHandlerFunc func(http.ResponseWriter, *http.Request, *slack.Client, *slackevents.EventsAPIEvent) (bool, error)
+type EventHandler interface {
+	EventHandle() EventHandlerFunc
 }
 
-type EventSubscribeEndpoint struct {
-	Handler       EventSubscribeHandler
+type EventEndpoint struct {
+	Client        *slack.Client
+	Handlers      []EventHandler
 	SigningSecret *string
 }
 
-func (h *EventSubscribeEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (ee *EventEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	//前処理
 	//bodyの取得
 	/*
@@ -39,7 +39,7 @@ func (h *EventSubscribeEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Reques
 	defer bodyReader.Close()
 
 	//署名の検証
-	if err := verifySlackSecret(r.Header, h.SigningSecret, &body); err != nil {
+	if err := verifySlackSecret(r.Header, ee.SigningSecret, &body); err != nil {
 		slackHandlerErrorResponse(w, err, 0)
 		return
 	}
@@ -53,14 +53,18 @@ func (h *EventSubscribeEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Reques
 
 	//slackからのAPI検証リクエストならここで処理する
 	if done, err := handleAPIVerificationRequest(&eventsAPIEvent, &body, w); err != nil {
+		//bodyが必要なのでhandlers配列で処理できない
 		slackHandlerErrorResponse(w, err, 0)
 		return
 	} else if !done {
-		//API検証リクエストじゃなかったので処理続行
-		if eventsAPIEvent.Type == slackevents.CallbackEvent {
-			h.Handler.Handle()(w, r, &eventsAPIEvent)
-		} else {
-			slackHandlerErrorResponse(w, fmt.Errorf("undefined event:%s", eventsAPIEvent.Type), 0)
+		for _, h := range ee.Handlers {
+			if interrupt, err := h.EventHandle()(w, r, ee.Client, &eventsAPIEvent); err != nil {
+				//http error
+				w.WriteHeader(http.StatusInternalServerError)
+				break
+			} else if interrupt {
+				break
+			}
 		}
 	}
 }

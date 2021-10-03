@@ -6,13 +6,15 @@ import (
 	"net/http"
 )
 
-type InteractiveHandlerFunc func(http.ResponseWriter, *http.Request, *slack.InteractionCallback)
+//interrupt: これを抜けたら後続のハンドラを飛ばすか errorの場合はinterrupt無視で飛ばす
+type InteractiveHandlerFunc func(http.ResponseWriter, *http.Request, *slack.Client, *slack.InteractionCallback) (bool, error)
 type InteractiveHandler interface {
-	Handle() InteractiveHandlerFunc
+	InteractiveHandle() InteractiveHandlerFunc
 }
 
 type InteractiveEndpoint struct {
-	Handler InteractiveHandler
+	Client   *slack.Client
+	Handlers []InteractiveHandler
 }
 
 func (i *InteractiveEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -25,5 +27,13 @@ func (i *InteractiveEndpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	i.Handler.Handle()(w, r, &payload)
+	for _, h := range i.Handlers {
+		if interrupt, err := h.InteractiveHandle()(w, r, i.Client, &payload); err != nil {
+			//http error
+			w.WriteHeader(http.StatusInternalServerError)
+			break
+		} else if interrupt {
+			break
+		}
+	}
 }
