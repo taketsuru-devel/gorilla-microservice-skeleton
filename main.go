@@ -69,15 +69,18 @@ func (s *sampleInteractiveHander) InteractiveHandle() slackwrap.InteractiveHandl
 	})
 }
 
-func GetEventIdImpl(r *http.Request, cli *slack.Client, ev *slackevents.EventsAPIEvent) string {
+func GetEventIdImpl(r *http.Request, cli *slack.Client, ev *slackevents.EventsAPIEvent) (eventId string) {
 	switch innerData := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppMentionEvent:
 		//export SLACK_BOT_USERID="<@U****>"
 		text := strings.ReplaceAll(innerData.Text, os.Getenv("SLACK_BOT_USERID"), "")
 		text = strings.TrimSpace(strings.ReplaceAll(text, "\u00a0", "")) //nbsp
 		skeletonutil.InfoLog(text, 0)
+		if text == BLOCK_ACTION_IMPL_ID {
+			eventId = text
+		}
 	}
-	return BLOCK_ACTION_IMPL_ID
+	return
 }
 
 type blockActionHandlerImpl struct{}
@@ -106,7 +109,8 @@ func (b *blockActionHandlerImpl) GetEventId() string {
 func (b *blockActionHandlerImpl) GetBlockActionHandler() slackwrap.BlockActionHandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, cli *slack.Client, ic *slack.InteractionCallback, b *slack.BlockAction) (err error) {
 		channelId := ic.Channel.GroupConversation.Conversation.ID
-		_, _, err = cli.PostMessage(channelId, slack.MsgOptionText(fmt.Sprintf("%sを受け付けました", b.Value), false))
+		skeletonutil.InfoLog(channelId, 0)
+		_, _, err = cli.PostMessage(channelId, slack.MsgOptionText(fmt.Sprintf("%sを受け付けました", b.SelectedOption.Value), false))
 		return
 	}
 }

@@ -24,8 +24,9 @@ func NewSlackHandlerFactory(cli *slack.Client, signingSecret *string, eh EventHa
 
 func (s *SlackHandlerFactory) CreateEventEndpoint() http.Handler {
 	return &EventEndpoint{
-		Client:   s.client,
-		Handlers: []EventHandler{s.blockActionManager, s.eventHandler},
+		Client:        s.client,
+		Handlers:      []EventHandler{s.blockActionManager, s.eventHandler},
+		SigningSecret: s.signingSecret,
 	}
 }
 

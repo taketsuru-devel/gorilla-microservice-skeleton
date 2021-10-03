@@ -73,7 +73,8 @@ func (b *blockActionManager) InteractiveHandle() InteractiveHandlerFunc {
 			for _, vmap := range ic.BlockActionState.Values {
 				for eventId, state := range vmap {
 					if h, ok := b.handlerMap[eventId]; ok {
-						if err = h.GetBlockActionHandler()(w, r, cli, ic, &state); err != nil {
+						err = h.GetBlockActionHandler()(w, r, cli, ic, &state)
+						if err != nil {
 							return
 						}
 					} else {
